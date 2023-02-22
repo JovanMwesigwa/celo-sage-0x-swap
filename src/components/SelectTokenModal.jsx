@@ -1,5 +1,7 @@
 import React from 'react'
 
+import tokens from '../../data/tokens.json'
+
 export default function SelectTokenModal({
   close,
   isOpen,
@@ -28,20 +30,17 @@ export default function SelectTokenModal({
                 </button>
               </div>
               {/*body*/}
-              <div className="relative p-3 px-0 flex-auto">
-                <div
-                  onClick={() => selectToken('cEUR', choice)}
-                  className="w-full px-4 mb-2 py-2 cursor-pointer border-b-[0.5px] hover:bg-neutral-50 flex flex-row items-center"
-                >
-                  <h1 className="text-xl ">cEUR</h1>
-                </div>
-
-                <div
-                  onClick={() => selectToken('cWETH', choice)}
-                  className="w-full px-4 mb-2 py-2 cursor-pointer hover:bg-neutral-50 flex flex-row items-center"
-                >
-                  <h1 className="text-xl ">cWETH</h1>
-                </div>
+              <div className="relative p-3 px-0 flex-auto overflow-y-scroll max-h-96">
+                {tokens.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => selectToken(item, choice)}
+                    className="w-full px-4 mb-2 py-2 cursor-pointer justify-between border-b-[0.5px] hover:bg-neutral-50 flex flex-col "
+                  >
+                    <h1 className="text-xl ">{item.name}</h1>
+                    <h1 className="text-sm text-green-500">{item.symbol}</h1>
+                  </div>
+                ))}
               </div>
 
               {/*footer*/}

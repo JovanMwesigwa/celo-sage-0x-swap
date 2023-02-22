@@ -5,8 +5,16 @@ import SelectTokenModal from './components/SelectTokenModal'
 function App() {
   const [isOpen, setIsOpen] = useState(false)
 
-  const [tokenFrom, setTokenFrom] = useState('cUSD')
-  const [tokenTo, setTokenTo] = useState(null)
+  const [tokenFrom, setTokenFrom] = useState({
+    id: 'celo-dollar',
+    symbol: 'cusd',
+    name: 'Celo Dollar',
+    platforms: {
+      celo: '0x765de816845861e75a25fca122bb6898b8b1282a',
+      'near-protocol': 'cusd.token.a11bd.near',
+    },
+  })
+  const [tokenTo, setTokenTo] = useState({})
   const [choice, setChoice] = useState('to')
 
   const open = (choiceType) => {
@@ -30,7 +38,7 @@ function App() {
       <div className="flex flex-1 flex-col h-screen w-full ">
         <NavbarComponent />
 
-        {tokenFrom === tokenTo && (
+        {tokenFrom.symbol === tokenTo.symbol && (
           <div className="flex text-red-400 font-medium flex-row self-center bg-red-50 px-4 py-2 text-sm rounded-md mb-3 border-2 border-red-400">
             <h4>Swap tokens can not be the same</h4>
           </div>
@@ -42,7 +50,7 @@ function App() {
 
             <div className="w-full border-[0.5px] p-2 rounded-md my-8">
               <div className="flex px-2 py-3 flex-row items-center justify-between">
-                <h1 className="text-2xl font-medium">{tokenFrom}</h1>
+                <h1 className="text-2xl font-medium">{tokenFrom.symbol}</h1>
 
                 <button
                   onClick={() => open('from')}
@@ -61,7 +69,7 @@ function App() {
 
             <div className="w-full border-[0.5px] p-2 rounded-md my-4">
               <div className="flex px-2 py-3 flex-row items-center justify-between">
-                {!tokenTo ? (
+                {!tokenTo.symbol ? (
                   <button
                     onClick={() => open('to')}
                     className="text-lg bg-blue-500 text-white rounded-full px-4 py-2 font-medium"
@@ -70,7 +78,7 @@ function App() {
                   </button>
                 ) : (
                   <>
-                    <h1 className="text-2xl font-medium">{tokenTo}</h1>
+                    <h1 className="text-2xl font-medium">{tokenTo.symbol}</h1>
 
                     <button
                       onClick={() => open('to')}
@@ -85,11 +93,13 @@ function App() {
               <input
                 type="number"
                 placeholder="0.0"
-                className="bg-neutral-100 text-xl outline-none my-3 w-full rounded-md p-2"
+                disabled
+                value={0.0}
+                className="bg-neutral-100 text-xl outline-none cursor-not-allowed my-3 w-full rounded-md p-2"
               />
             </div>
 
-            {tokenFrom != tokenTo && (
+            {tokenFrom.symbol != tokenTo.symbol && (
               <>
                 <h4 className="text-neutral-700 text-sm">
                   Estimated gas fee:{' '}
