@@ -9,9 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@web3uikit/core": "^0.2.45",
+    "@web3uikit/web3": "^0.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-modal": "^3.16.1"
+    "react-modal": "^3.16.1",
+     "moralis-v1": "^1.12.0",
+     "react-moralis": "^1.4.2",
+    "web3uikit": "0.1.159"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",
