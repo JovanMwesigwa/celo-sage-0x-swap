@@ -10,6 +10,7 @@ export default function SelectTokenModal({
 }) {
   if (!isOpen) return
 
+  // console.log('Token: ', tokens)
   return (
     <>
       <>

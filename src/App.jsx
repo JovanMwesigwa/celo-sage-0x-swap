@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import qs from 'qs'
 import NavbarComponent from './components/NavbarComponent'
 import SelectTokenModal from './components/SelectTokenModal'
 
@@ -17,6 +18,11 @@ function App() {
   const [tokenTo, setTokenTo] = useState({})
   const [choice, setChoice] = useState('to')
 
+  // Prices +
+  const [amountEntered, setAmountEntered] = useState(0.0)
+  const [amountTo, setAmountTo] = useState(null)
+  const [gasPrice, setGasPrice] = useState(0.0)
+
   const open = (choiceType) => {
     setChoice(choiceType)
     setIsOpen(true)
@@ -31,6 +37,39 @@ function App() {
       setTokenTo(token)
       setIsOpen(false)
     }
+  }
+
+  const getPrice = async () => {
+    if (!tokenFrom.symbol || !tokenTo.symbol || !amountEntered) return
+
+    // Get amount by calculating it from the smallest base unit of a standard erc20 token which is 18
+    let amount = Number(amountEntered) * 10 ** 18
+
+    // set the params
+    const params = {
+      sellToken: tokenFrom.platforms.celo
+        ? tokenFrom.platforms.celo
+        : tokenFrom.symbol,
+      buyToken: tokenTo.platforms.celo
+        ? tokenTo.platforms.celo
+        : tokenTo.symbol,
+      sellAmount: amount,
+    }
+
+    // Fetch the swap price.
+    const response = await fetch(
+      `https://celo.api.0x.org/swap/v1/price?${qs.stringify(params)}`
+    )
+
+    // Await and parse the JSON response
+    const priceResult = await response.json()
+    console.log('Price: ', priceResult)
+
+    const pricesConverted = priceResult.buyAmount / 10 ** 18
+    setAmountTo(pricesConverted)
+    console.log('Price to: ', pricesConverted)
+
+    setGasPrice(priceResult.estimatedGas)
   }
 
   return (
@@ -63,6 +102,9 @@ function App() {
               <input
                 type="number"
                 placeholder="0.0"
+                value={amountEntered}
+                onChange={(e) => setAmountEntered(e.target.value)}
+                onBlur={getPrice}
                 className="bg-neutral-100 text-xl outline-none my-3 w-full rounded-md p-2"
               />
             </div>
@@ -94,7 +136,7 @@ function App() {
                 type="number"
                 placeholder="0.0"
                 disabled
-                value={0.0}
+                value={amountTo ? amountTo : 0.0}
                 className="bg-neutral-100 text-xl outline-none cursor-not-allowed my-3 w-full rounded-md p-2"
               />
             </div>
@@ -102,11 +144,24 @@ function App() {
             {tokenFrom.symbol != tokenTo.symbol && (
               <>
                 <h4 className="text-neutral-700 text-sm">
-                  Estimated gas fee:{' '}
+                  Estimated gas fee: {gasPrice}
                 </h4>
-                <button className="w-full p-3 my-3 bg-blue-600 rounded-md text-white">
-                  Swap
-                </button>
+
+                {amountEntered && tokenTo.symbol ? (
+                  <button
+                    onClick={getPrice}
+                    className="w-full p-3 my-3 bg-blue-600 rounded-md text-white"
+                  >
+                    Swap
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full p-3 my-3 cursor-not-allowed bg-neutral-300 rounded-md text-white"
+                  >
+                    Swap
+                  </button>
+                )}
               </>
             )}
           </div>
