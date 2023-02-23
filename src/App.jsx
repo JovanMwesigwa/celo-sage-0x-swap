@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import qs from 'qs'
 import { useMoralis, useWeb3Contract } from 'react-moralis'
+import Web3 from 'web3'
+import BigNumber from 'big-number'
+import ERC20ABI from '../data/abi.json'
 
 import NavbarComponent from './components/NavbarComponent'
 import SelectTokenModal from './components/SelectTokenModal'
@@ -100,15 +103,40 @@ function App() {
 
     // Await and parse the JSON response
     const priceResult = await response.json()
-    console.log('Price: ', priceResult)
 
     const pricesConverted = priceResult.buyAmount / 10 ** 18
     setAmountTo(pricesConverted)
-    console.log('Price to: ', pricesConverted)
 
     setGasPrice(priceResult.estimatedGas)
 
     return priceResult
+  }
+
+  const swap = async () => {
+    // Get and return the created quote
+    const priceQuote = await getQuote()
+
+    // Create a web3 object from the ABI
+    const web3 = new Web3(Web3.givenProvider)
+
+    // Get the token from addess
+    const tokenFromAddress = tokenFrom.platforms.celo
+
+    // Create the contract instance
+    const Contract = new web3.eth.Contract(ERC20ABI, tokenFromAddress)
+    console.log('Contract instance set-up: ', Contract)
+
+    // Get the Max Approved amount of the token and convert it using BigNumber
+    const maxApproval = new BigNumber(2).pow(256).minus(1)
+    console.log('approval amount: ', maxApproval)
+
+    // Grant the spender address approval to spend the user's tokens
+    const tx = await Contract.methods
+      .approve(priceQuote.allowanceTarget, maxApproval)
+      .send({ from: account })
+      .then((res) => {
+        console.log('tx: ', res)
+      })
   }
 
   return (
@@ -188,7 +216,7 @@ function App() {
 
                 {amountEntered && tokenTo.symbol ? (
                   <button
-                    onClick={getQuote}
+                    onClick={swap}
                     className="w-full p-3 my-3 bg-blue-600 rounded-md text-white"
                   >
                     Swap
