@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import qs from 'qs'
+import { useMoralis, useWeb3Contract } from 'react-moralis'
+
 import NavbarComponent from './components/NavbarComponent'
 import SelectTokenModal from './components/SelectTokenModal'
 
 function App() {
   const [isOpen, setIsOpen] = useState(false)
+
+  const { account } = useMoralis()
 
   const [tokenFrom, setTokenFrom] = useState({
     id: 'celo-dollar',
@@ -70,6 +74,41 @@ function App() {
     console.log('Price to: ', pricesConverted)
 
     setGasPrice(priceResult.estimatedGas)
+  }
+
+  const getQuote = async () => {
+    if (!tokenFrom.symbol || !tokenTo.symbol || !amountEntered) return
+
+    // Get amount by calculating it from the smallest base unit of a standard erc20 token which is 18
+    let amount = Number(amountEntered) * 10 ** 18
+
+    // set the params
+    const params = {
+      sellToken: tokenFrom.platforms.celo
+        ? tokenFrom.platforms.celo
+        : tokenFrom.symbol,
+      buyToken: tokenTo.platforms.celo
+        ? tokenTo.platforms.celo
+        : tokenTo.symbol,
+      sellAmount: amount,
+      takerAddress: account,
+    }
+
+    const response = await fetch(
+      `https://celo.api.0x.org/swap/v1/quote?${qs.stringify(params)}`
+    )
+
+    // Await and parse the JSON response
+    const priceResult = await response.json()
+    console.log('Price: ', priceResult)
+
+    const pricesConverted = priceResult.buyAmount / 10 ** 18
+    setAmountTo(pricesConverted)
+    console.log('Price to: ', pricesConverted)
+
+    setGasPrice(priceResult.estimatedGas)
+
+    return priceResult
   }
 
   return (
@@ -149,7 +188,7 @@ function App() {
 
                 {amountEntered && tokenTo.symbol ? (
                   <button
-                    onClick={getPrice}
+                    onClick={getQuote}
                     className="w-full p-3 my-3 bg-blue-600 rounded-md text-white"
                   >
                     Swap
