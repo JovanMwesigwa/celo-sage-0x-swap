@@ -137,6 +137,10 @@ function App() {
       .then((res) => {
         console.log('tx: ', res)
       })
+
+    // Make the swap now
+    const txRecipt = await web3.eth.sendTransaction(priceQuote)
+    console.log('Swap transaction: ', txRecipt)
   }
 
   return (
